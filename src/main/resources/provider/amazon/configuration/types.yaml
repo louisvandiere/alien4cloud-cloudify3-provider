@@ -100,7 +100,7 @@ node_types:
       volume_type:
         type: string
         default: "standard"
-        constrainsts:
+        constraints:
           - valid_values: [ "standard", "io1", "gp2" ]
     attributes:
       device: { get_attribute: [SELF, device] }
