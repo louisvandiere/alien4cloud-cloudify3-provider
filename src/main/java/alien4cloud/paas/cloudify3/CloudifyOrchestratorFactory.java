@@ -58,8 +58,15 @@ public class CloudifyOrchestratorFactory implements IOrchestratorPluginFactory<C
                 "http://www.getcloudify.org/spec/openstack-plugin/" + CFY_SCRIPT_VERSION + "/plugin.yaml",
                 "http://www.getcloudify.org/spec/diamond-plugin/" + CFY_SCRIPT_VERSION + "/plugin.yaml"));
         openstack.setDsl("cloudify_dsl_1_2");
+        LocationConfiguration azure = new LocationConfiguration();
+        // TODO: add default imports for azure
+        azure.setImports(Lists.newArrayList("http://www.getcloudify.org/spec/cloudify/" + CFY_VERSION + "/types.yaml",
+                "https://raw.githubusercontent.com/cloudify-cosmo/cloudify-azure-plugin/master/plugin.yaml",
+                "http://www.getcloudify.org/spec/diamond-plugin/" + CFY_SCRIPT_VERSION + "/plugin.yaml"));
+        azure.setDsl("cloudify_dsl_1_2");
         locationConfigurations.setAmazon(amazon);
         locationConfigurations.setOpenstack(openstack);
+        locationConfigurations.setAzure(azure);
         cloudConfiguration.setLocations(locationConfigurations);
         return cloudConfiguration;
     }
@@ -101,7 +108,7 @@ public class CloudifyOrchestratorFactory implements IOrchestratorPluginFactory<C
     @Override
     public LocationSupport getLocationSupport() {
         // TODO dynamically search in spring context for locations support
-        return new LocationSupport(false, new String[] { "openstack", "amazon" });
+        return new LocationSupport(false, new String[] { "openstack", "amazon", "azure" });
     }
 
     @Override

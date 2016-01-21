@@ -29,6 +29,8 @@ public class CloudConfiguration {
             return locations.getAmazon();
         case "openstack":
             return locations.getOpenstack();
+        case "azure":
+            return locations.getAzure();
         }
         throw new NotFoundException("Location " + locationName + " not found");
     }

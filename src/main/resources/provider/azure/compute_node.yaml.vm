@@ -1,0 +1,40 @@
+#parse("provider/common/generic_resource.yaml.vm")
+#foreach($compute in ${deployment.computes})
+#set($computeIsWindows = (${compute.nodeTemplate.type} == "alien.cloudify.azure.nodes.WindowsCompute"))
+  ${compute.id}:
+    type: ${compute.nodeTemplate.type}
+    properties: ${util.natives.formatProperties(3, $compute.nodeTemplate.properties, $deployment.propertyMappings.get($compute.nodeTemplate.type))}
+#if(${compute.scalingPolicy})
+    instances:
+#if(${compute.scalingPolicy.initialInstances})
+      deploy: ${compute.scalingPolicy.initialInstances}
+#else
+      deploy: 1
+#end
+#end
+#set($publicNetworks = ${util.network.getExternalNetworks($compute)} )
+#if($util.collectionHasElement(${publicNetworks}) || $computeIsWindows)
+    relationships:
+#foreach($externalNetwork in $publicNetworks)
+      - target: ${mapping.generatedNodePrefix}_floating_ip_${compute.id}_on_${externalNetwork.id}
+        type: cloudify.azure.relationships.instance_connected_to_elastic_ip
+#end
+#end
+#if($computeIsWindows)
+      - type: cloudify.azure.relationships.instance_connected_to_keypair
+        target: ${mapping.generatedNodePrefix}_key_pair_for_${compute.id}
+  ${mapping.generatedNodePrefix}_key_pair_for_${compute.id}:
+    type: cloudify.azure.nodes.KeyPair
+    properties:
+      resource_id: ${compute.nodeTemplate.properties.get("key_pair").value}
+      use_external_resource: true
+      private_key_path: ${compute.nodeTemplate.properties.get("private_key_path").value}
+#else
+    interfaces:
+#parse("provider/common/monitoring_interfaces.yaml.vm")
+#end
+#foreach($externalNetwork in $publicNetworks)
+  ${mapping.generatedNodePrefix}_floating_ip_${compute.id}_on_${externalNetwork.id}:
+    type: ${externalNetwork.nodeTemplate.type}
+#end
+#end
